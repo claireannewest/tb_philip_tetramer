@@ -5,41 +5,30 @@ import sys
 from decimal import Decimal
 import math
 import yaml
-open_param_file = open('parameters.yaml')
+
+open_param_file = open('parameter_files/parameters.yaml')
 param = yaml.load(open_param_file)
+eps_b = np.sqrt(param['n_b'])
+c = param['constants']['c']
+hbar_eVs = param['constants']['hbar_eVs']
+e = param['constants']['e']
+dim = param['constants']['dim']
+wp = param['constants']['w_p'] / hbar_eVs
+eps_inf = param['constants']['eps_inf']
+gam_NR = param['constants']['gam_NR'] / hbar_eVs
+prec = param['precision']
 
-def calculateEigen(): #everything is in CGS until the last step, all frequency is converted to eV
-    eps_b = np.sqrt(param['n_b'])
-    c = param['constants']['c']
-    hbar_eVs = param['constants']['hbar_eVs']
-    e = param['constants']['e']
-    dim = param['constants']['dim']
-    wp = param['constants']['w_p'] / hbar_eVs
-    eps_inf = param['constants']['eps_inf']
-    gam_NR = param['constants']['gam_NR'] / hbar_eVs
 
-    base_vectors = np.loadtxt(param['dipole_directions']) #column 0 = x direction; column 1 = y direction; row 0 = long dipole on particle 1; row 1 = short dipole on particle 1; ...
-    coordinates = np.loadtxt(param['load_coords'])
-    x_coords = coordinates[:,0]
-    y_coords = coordinates[:,1]
-    numPart = np.float(len(x_coords))
-
-    prec = param['precision']
-    if param['input_parameters'] == 'fit':
+def oscillatorParameters():
+    if param['input_parameters'] == 'fit': # Using a fit function to determine oscillator parameters
         input_long = param['characterizing_dipoles']['long']
         input_short = param['characterizing_dipoles']['short']
-    if param['input_parameters'] == 'prolate':
+    if param['input_parameters'] == 'prolate': # Using a prolate spheriod approximation to determine oscillator parameters 
         c_s = param['analytic_prolate']['c_s']
         a_s = param['analytic_prolate']['a_s']
-    if param['input_parameters'] == 'oblate':
+    if param['input_parameters'] == 'oblate': # Using a prolate spheriod approximation to determine oscillator parameters 
         c_s = param['analytic_oblate']['c_s']
         a_s = param['analytic_oblate']['a_s']
-     
-    dip_coords = np.zeros((np.int(numPart),np.int(dim)),dtype=np.double)
-    for row in range(0,np.int(numPart)):
-        dip_coords[row,:] = np.array((coordinates[row,0], coordinates[row,1]))
-    dip_coords = np.append(dip_coords, dip_coords,axis=0)*10**(-7)
-
     if param['input_parameters'] == 'fit':
         input_trans = np.loadtxt(input_short)
         input_long = np.loadtxt(input_long)
@@ -47,7 +36,6 @@ def calculateEigen(): #everything is in CGS until the last step, all frequency i
         m_short = input_trans[0]
         wsp_long = input_long[1]/hbar_eVs
         wsp_short = input_trans[1]/hbar_eVs
-        print 'omega short', wsp_short*hbar_eVs
 
     if param['input_parameters'] == 'prolate': # y = long axis coded, yet called z in Kevin's notes, z = short axis
         e_s = np.sqrt( (c_s**2-a_s**2) /c_s**2)
@@ -83,6 +71,21 @@ def calculateEigen(): #everything is in CGS until the last step, all frequency i
         m_short = m
         wsp_long = wsp
         wsp_short = wsp
+    return m_short, m_long, wsp_short, wsp_long
+
+def calculateEigen(): #everything is in CGS until the last step, all frequency is converted to eV
+
+    m_short, m_long, wsp_short, wsp_long = oscillatorParameters()
+    base_vectors = np.loadtxt(param['dipole_directions']) # column 0 = x direction; column 1 = y direction; row 0 = first dipole on particle 1; row 1 = second dipole on particle 1; ... units don't matter because these are unit vectors and will be normalized
+    coordinates = np.loadtxt(param['load_coords']) # location of each particle in cm
+    x_coords = coordinates[:,0] # x coordiantes of each particle 
+    y_coords = coordinates[:,1] # y coordiantes of each particle 
+    numPart = np.float(len(x_coords)) # total number of particles 
+     
+    dip_coords = np.zeros((np.int(numPart),np.int(dim)),dtype=np.double) # Initializing array that will contain all dipole coordinates
+    for row in range(0,np.int(numPart)):  
+        dip_coords[row,:] = np.array((coordinates[row,0], coordinates[row,1]))
+    dip_coords = np.append(dip_coords, dip_coords,axis=0)
 
     H = np.zeros( (np.int(numPart*dim),np.int(numPart*dim)),dtype=complex) 
     vec = np.zeros((np.int(numPart*dim),np.int(numPart*dim)),dtype=np.double) 
@@ -103,7 +106,6 @@ def calculateEigen(): #everything is in CGS until the last step, all frequency i
 
             for i in range(0,np.int(numPart*dim)):
                 for j in range(0,np.int(numPart*dim)):
-
                     r_ij = np.array([ dip_coords[i,0]-dip_coords[j,0] , dip_coords[i,1]-dip_coords[j,1] ])
                     mag_rij = scipy.linalg.norm(r_ij)
                     if i == j and i / numPart < 1: # you're a long dipole
@@ -147,9 +149,18 @@ def calculateEigen(): #everything is in CGS until the last step, all frequency i
     total = np.real( total )
     total = total[np.argsort(total[:,0])]
     constants = [eps_b, c, hbar_eVs, m_long, m_short, gam_NR]
-    np.savetxt('total.txt', total)
-    np.savetxt('dip_coords.txt', dip_coords)
+    #np.savetxt('total.txt', total)
+    #np.savetxt('dip_coords.txt', dip_coords)
     return constants, final_hams, total, dip_coords
+
+calculateEigen()
+
+
+
+
+
+
+
 
 def check_mode():
     constants, ham_hist, total, dip_coords  = calculateEigen()
@@ -168,7 +179,7 @@ def check_mode():
         if diff[0] >= 10**-(1): #used to be 10**-prec
             print 'THIS CODE DID NOT CONVEREGE FOR MODE', mode
 
-check_mode()
+#check_mode()
 
 
 
