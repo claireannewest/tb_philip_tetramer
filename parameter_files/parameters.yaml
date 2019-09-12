@@ -1,7 +1,7 @@
 precision: 8
 
-dipole_directions: '/Users/clairewest/werk/research/git/tight_binding/parameter_files/base_vectors_two_particles.txt'
-load_coords: 'parameter_files/coords_two_particles' 
+dipole_directions: 'parameter_files/base_vectors_two_particles.txt'
+load_coords: 'parameter_files/coords_two_particles.txt' 
 
 input_parameters: 'oblate' # or oblate, prolate, or fit. This will set effective mass and resonance frequency.
 
