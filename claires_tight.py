@@ -18,7 +18,6 @@ prec = param['precision']
 
 inputs = np.loadtxt(param['inputs'],skiprows=1)
 
-<<<<<<< HEAD
 rod_centers = inputs[:,0:2]*1E-7
 dip_centers = inputs[:,2:4]*1E-7 # the center of the rod is not necessarily the center of the dipole
 L_vecs = inputs[:,4:6]*1E-7
