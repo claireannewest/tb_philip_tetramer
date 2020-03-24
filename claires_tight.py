@@ -23,7 +23,7 @@ dip_centers = inputs[:,2:4]*1E-7 # the center of the particle is not necessarily
 L_vecs = inputs[:,4:6]*1E-7
 S_vecs = inputs[:,6:8]*1E-7
 
-numParts = len(inputs)
+numParts = len(inputs) # number of particles
 numIndModes = (inputs.shape[1]-4)/2
 
 w0_L = 1.62 # w0 of long axis dipole 
