@@ -1,0 +1,4 @@
+1	0	#long axis, 1
+0	1	#long axis, 2
+1	0	#long axis, 3
+0	1	#long axis, 4
