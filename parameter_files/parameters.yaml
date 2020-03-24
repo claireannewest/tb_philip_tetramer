@@ -1,38 +1,12 @@
-precision: 8
+precision: 15
 
-dipole_directions: 'parameter_files/base_vectors_two_particles.txt'
-load_coords: 'parameter_files/coords_two_particles.txt' 
+inputs: 'parameter_files/inputs.txt'
 
-input_parameters: 'oblate' # or oblate, prolate, or fit. This will set effective mass and resonance frequency.
-
-# characterizing_dipoles: #if fit, then these are the input parameters for the long dipole and short dipole
-#   long: '/Users/clairewest/werk/research/thermo/2nd_project/analytics/claires_badass_code/fit_rod_long'
-#   short: '/Users/clairewest/werk/research/thermo/2nd_project/analytics/claires_badass_code/fit_rod_trans'
-
-analytic_oblate: 
-  a_s: 124.E-7 #half length of the long axis of the oblate in cm
-  c_s: 13.E-7 #half length of the short axis of the oblate in cm
-
-analytic_prolate: 
-  c_s: 20.E-7 #half length of the long axis of the prolate in cm
-  a_s: 10.E-7 #half length of the short axis of the prolate in cm
-
-n_b: 1.473
+n_b: 1.
 
 constants:
   c: 2.998E+10 #cm/s
   hbar_eVs: 6.58212E-16 #eV*s
+  hbar_cgs: 1.0545716E-27 
   e: 4.80326E-10 #statC
-  dim: 2.0
-  w_p: 9.0 #eV
-  eps_inf: 9.84 #unitless
-  gam_NR: 0.069 #eV
 
-# spectra_fitting: 
-#   path: '/Users/clairewest/werk/research/thermo/2nd_project/single_particle/Spectrum_long'
-#   which_code: 'dda'
-#   which_dipole: 'long'
-#   observable: 'ext'
-
-# turn_forcing:
-#   force: 'e_beam'
