@@ -1,6 +1,6 @@
 # tight_binding code for Philip's tetramers
 
-The local folder lives in ~/werk/research/git/tight_binding 
+The local folder lives in ~/werk/research/philips_square/analytics/tight_binding
 
 To update changes, 
 
