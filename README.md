@@ -1,4 +1,4 @@
-# tight_binding
+# tight_binding code for Philip's tetramers
 
 The local folder lives in ~/werk/research/git/tight_binding 
 
