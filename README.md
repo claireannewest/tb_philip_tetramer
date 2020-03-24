@@ -6,4 +6,4 @@ To update changes,
 
 git add .
 git commit -m "whatever"
-git push -u origin master
+git push -u tb_philip master
