@@ -6,7 +6,7 @@ from decimal import Decimal
 import math
 import yaml
 plt.rc('text', usetex=True)
-plt.rc('font', family='serif') ##
+plt.rc('font', family='serif')
 
 open_param_file = open('parameter_files/parameters.yaml')
 param = yaml.load(open_param_file)
@@ -37,25 +37,10 @@ w0_L = 1.62
 w0_S = 2.45
 m_L = .9824E-34
 m_S = 1.773E-34
-=======
-part_centers = inputs[:,0:2]*1E-7 # particle centers
-dip_centers = inputs[:,2:4]*1E-7 # the center of the particle is not necessarily the center of the dipole
-L_vecs = inputs[:,4:6]*1E-7
-S_vecs = inputs[:,6:8]*1E-7
-
-numParts = len(inputs) # number of particles
-numIndModes = (inputs.shape[1]-4)/2
-
-w0_L = 1.62 # w0 of long axis dipole 
-w0_S = 2.45 # w0 of short axis dipole 
-m_L = .9824E-34 # effective mass of long axis dipole 
-m_S = 1.773E-34 # effective mass of short axis dipole
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
 
 gamNR_L = 0.07
 gamNR_S = 0.07
 
-<<<<<<< HEAD
 def DL(i): #allows me to grab the dipole centers and directions for each rod
     rod_cent_i = rod_centers[i : i+1, :]
     dipcent_i = dip_centers[i : i+1, :]
@@ -68,22 +53,7 @@ def DS(i): #allows me to grab the dipole centers and directions for each rod
     vecs = S_vecs[i : i+1, :]
     return np.column_stack(( rod_cent_i, dipcent_i, vecs ))
 
-def make_g(mode_i, mode_j,m,k): #mode 1,2 are four columns: [sph_cent_x, sph_cent_y, vec_x, vec_y] and four rows corresponding to the four spheres
-=======
-def DL(i): #allows me to grab the dipole centers and directions for each particle
-    part_cent_i = part_centers[i : i+1, :]
-    dipcent_i = dip_centers[i : i+1, :]
-    vecs = L_vecs[i : i+1, :]
-    return np.column_stack(( part_cent_i, dipcent_i, vecs ))
-
-def DS(i): #allows me to grab the dipole centers and directions for each particle
-    part_cent_i = part_centers[i : i+1, :]
-    dipcent_i = dip_centers[i : i+1, :]
-    vecs = S_vecs[i : i+1, :]
-    return np.column_stack(( part_cent_i, dipcent_i, vecs ))
-
 def make_g(mode_i, mode_j,m,k): #mode 1,2 are four columns: [part_cent_x, part_cent_y, vec_x, vec_y] and four rows corresponding to the four particles
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
     k = np.real(k)
     r_ij = mode_i[0,2:4]-mode_j[0,2:4]  #distance between the nth and mth dipole
     mag_rij = np.linalg.norm(r_ij)
@@ -101,21 +71,13 @@ def make_g(mode_i, mode_j,m,k): #mode 1,2 are four columns: [part_cent_x, part_c
         g =  e**2 * hbar_eVs**2 * ( nearField - intermedField - farField ) * np.exp(1j*k*mag_rij) 
     return -g/(m)
 
-<<<<<<< HEAD
-#make_g(mode_i=0, mode_j=1, m=m_L, k=1.*np.sqrt(eps_b)/c)
-
 def make_H(k):
     H = np.zeros( (int(numIndModes*numRods),int(numIndModes*numRods)),dtype=complex) 
-=======
-def make_H(k):
-    H = np.zeros( (int(numIndModes*numParts),int(numIndModes*numParts)),dtype=complex) 
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
     w_thisround = k*c/np.sqrt(eps_b)*hbar_eVs #eV
 
     gam_L = gamNR_L + (np.real(w_thisround))**2*(2.0*e**2)/(3.0*m_L*c**3)/hbar_eVs
     gam_S = gamNR_S + (np.real(w_thisround))**2*(2.0*e**2)/(3.0*m_S*c**3)/hbar_eVs
 
-<<<<<<< HEAD
     for i in range(0, numRods): #handle the on diagonal terms 
         H[ int(numIndModes*i)   , int(numIndModes*i)   ] = w0_L**2 - 1j*gam_L*w_thisround
         H[ int(numIndModes*i+1) , int(numIndModes*i+1) ] = w0_S**2 - 1j*gam_S*w_thisround
@@ -138,30 +100,6 @@ def make_H(k):
                 
                 H[ int(numIndModes*rod_j)  , int(numIndModes*rod_i+1) ] = make_g(mode_i=DL(i=rod_j), mode_j=DS(i=rod_i), m=m_L, k=k)
                 H[ int(numIndModes*rod_j+1), int(numIndModes*rod_i+1) ] = make_g(mode_i=DS(i=rod_j), mode_j=DS(i=rod_i), m=m_S, k=k)
-=======
-    for i in range(0, numParts): #handle the on diagonal terms 
-        H[ int(numIndModes*i)   , int(numIndModes*i)   ] = w0_L**2 - 1j*gam_L*w_thisround
-        H[ int(numIndModes*i+1) , int(numIndModes*i+1) ] = w0_S**2 - 1j*gam_S*w_thisround
-
-    for part_i in range(0 , numParts-1): #handle the off diagonal terms
-        for part_j in range(1, numParts): 
-            if part_i != part_j:
-               
-                ### L_i coupled with (L_1, S_1, ... L_N, S_N) ### 
-                H[ int(numIndModes*part_i), int(numIndModes*part_j)  ] = make_g(mode_i=DL(i=part_i), mode_j=DL(i=part_j), m=m_L, k=k)
-                H[ int(numIndModes*part_i), int(numIndModes*part_j+1) ] = make_g(mode_i=DL(i=part_i), mode_j=DS(i=part_j), m=m_L, k=k)
-                
-                ### S_i coupled with (L_1, S_1, ... L_N, S_N) ###
-                H[ int(numIndModes*part_i+1), int(numIndModes*part_j)  ] = make_g(mode_i=DS(i=part_i), mode_j=DL(i=part_j), m=m_S, k=k)
-                H[ int(numIndModes*part_i+1), int(numIndModes*part_j+1)] = make_g(mode_i=DS(i=part_i), mode_j=DS(i=part_j), m=m_S, k=k)
-
-                ########## Now the opposite of the above terms ##########
-                H[ int(numIndModes*part_j)  , int(numIndModes*part_i) ] = make_g(mode_i=DL(i=part_j), mode_j=DL(i=part_i), m=m_L, k=k)
-                H[ int(numIndModes*part_j+1), int(numIndModes*part_i) ] = make_g(mode_i=DS(i=part_j), mode_j=DL(i=part_i), m=m_S, k=k)
-                
-                H[ int(numIndModes*part_j)  , int(numIndModes*part_i+1) ] = make_g(mode_i=DL(i=part_j), mode_j=DS(i=part_i), m=m_L, k=k)
-                H[ int(numIndModes*part_j+1), int(numIndModes*part_i+1) ] = make_g(mode_i=DS(i=part_j), mode_j=DS(i=part_i), m=m_S, k=k)
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
 
         eigval, eigvec = np.linalg.eig(H)
     return eigval, eigvec, H
@@ -169,35 +107,19 @@ def make_H(k):
 
 
 def interate():
-<<<<<<< HEAD
     final_eigvals = np.zeros(np.int(numIndModes*numRods),dtype=complex)
     final_eigvecs = np.zeros( (np.int(numIndModes*numRods), np.int(numIndModes*numRods)), dtype=complex) 
     w_Lstart = -1j*gamNR_L/2. + np.sqrt(-gamNR_L**2/4.+w0_L**2)
     w_Sstart = -1j*gamNR_S/2. + np.sqrt(-gamNR_S**2/4.+w0_S**2)
 
     for mode in range(0,np.int(numIndModes*numRods)): #converge each mode individually         
-=======
-    final_eigvals = np.zeros(np.int(numIndModes*numParts),dtype=complex)
-    final_eigvecs = np.zeros( (np.int(numIndModes*numParts), np.int(numIndModes*numParts)), dtype=complex) 
-    w_Lstart = -1j*gamNR_L/2. + np.sqrt(-gamNR_L**2/4.+w0_L**2)
-    w_Sstart = -1j*gamNR_S/2. + np.sqrt(-gamNR_S**2/4.+w0_S**2)
-
-    for mode in range(0,np.int(numIndModes*numParts)): #converge each mode individually         
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
         if mode == 0 or mode == 2 or mode == 4 or mode == 6: 
             eigval_hist = np.array([w_Lstart, w_Lstart*1.1],dtype=complex) 
         if mode == 1 or mode == 3 or mode == 5 or mode == 7:
             eigval_hist = np.array([w_Sstart, w_Sstart*1.1],dtype=complex) 
-
-<<<<<<< HEAD
         eigvec_hist = np.zeros((int(numIndModes*numRods), 2))
         eigvec_hist[:,0] = 0.5
         vec_prec = np.zeros((int(numIndModes*numRods), 1))+10**(-prec)
-=======
-        eigvec_hist = np.zeros((int(numIndModes*numParts), 2))
-        eigvec_hist[:,0] = 0.5
-        vec_prec = np.zeros((int(numIndModes*numParts), 1))+10**(-prec)
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
 
         count = 0
         inercount = 1
@@ -244,18 +166,13 @@ def seeVectors(mode):
     dip_ycoords = dip_centers[:,0]
     dip_zcoords = dip_centers[:,1]  
    
-<<<<<<< HEAD
     plt.subplot(1,int(numIndModes*numRods),mode+1)
-=======
-    plt.subplot(1,int(numIndModes*numParts),mode+1)
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
     ax = plt.gca()
     ax.set_aspect('equal', adjustable='box')
 
     plt.title('%.2f eV' % (w), fontsize=18)
     plt.scatter(dip_ycoords, dip_zcoords,c='blue',s=50)
 
-<<<<<<< HEAD
     for rod_i in range(0, numRods):
         DL_i = L_vecs[rod_i : rod_i+1, :]
         DS_i = S_vecs[rod_i : rod_i+1, :]
@@ -264,16 +181,6 @@ def seeVectors(mode):
         ymin = min(dip_ycoords)-1E-5; ymax = max(dip_ycoords)+1E-5
         zmin = min(dip_zcoords)-1E-5; zmax = max(dip_zcoords)+1E-5
         plt.quiver(dip_ycoords[rod_i : rod_i+1], dip_zcoords[rod_i : rod_i+1], mag_mode[:,0], mag_mode[:,1], pivot='mid', 
-=======
-    for part_i in range(0, numParts):
-        DL_i = L_vecs[part_i : part_i+1, :]
-        DS_i = S_vecs[part_i : part_i+1, :]
-        mag_mode = (v[int(numIndModes*part_i)]*DL_i + v[int(numIndModes*part_i+1)]*DS_i)
-
-        ymin = min(dip_ycoords)-1E-5; ymax = max(dip_ycoords)+1E-5
-        zmin = min(dip_zcoords)-1E-5; zmax = max(dip_zcoords)+1E-5
-        plt.quiver(dip_ycoords[part_i : part_i+1], dip_zcoords[part_i : part_i+1], mag_mode[:,0], mag_mode[:,1], pivot='mid', 
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
             width=.5, #shaft width in arrow units 
             scale=1., 
             headlength=5,
@@ -290,19 +197,13 @@ def seeVectors(mode):
 final_eigvals, final_eigvecs = interate()
 
 fig = plt.figure(num=None, figsize=(12, 2), dpi=80, facecolor='w', edgecolor='k')   
-<<<<<<< HEAD
 for mode in range(0,int(numIndModes*numRods)):
-=======
-for mode in range(0,int(numIndModes*numParts)):
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
     seeVectors(mode=mode)
 plt.show()
 
 def seeFields(mode):
     w = np.real(final_eigvals[mode])
     v = np.real(final_eigvecs[:,mode])
-
-<<<<<<< HEAD
     sph_xcoords = 0*dip_centers[:,0]
     sph_ycoords = dip_centers[:,0]
     sph_zcoords = dip_centers[:,1]  
@@ -315,39 +216,18 @@ def seeFields(mode):
 
     ymin = min(sphere_origins[:,1])-2E-5; ymax = max(sphere_origins[:,1])+2E-5
     zmin = min(sphere_origins[:,2])-2E-5; zmax = max(sphere_origins[:,2])+2E-5
-=======
-    part_xcoords = 0*dip_centers[:,0]
-    part_ycoords = dip_centers[:,0]
-    part_zcoords = dip_centers[:,1]  
-    part_origins = np.column_stack((part_xcoords, part_ycoords, part_zcoords))
-    p = np.zeros((int(numParts), 3))
-    for part_i in range(0, int(numParts)):
-        L_i = L_vecs[(part_i) : (part_i+1), :]
-        S_i = S_vecs[(part_i) : (part_i+1), :]
-        p[int(part_i) : int(part_i+1), 1:3] = ( v[int(numIndModes*part_i)]*L_i + v[int(numIndModes*part_i+1)]*S_i )
-
-    ymin = min(part_origins[:,1])-2E-5; ymax = max(part_origins[:,1])+2E-5
-    zmin = min(part_origins[:,2])-2E-5; zmax = max(part_origins[:,2])+2E-5
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
 
     x = 60e-07; 
     numPoints = 71
     y = np.linspace(ymin, ymax, numPoints ); z = np.linspace(zmin, zmax, numPoints )
 
     ### Efield for every dipole, [ which dipole, which y point, which z point ] ###
-<<<<<<< HEAD
+
     Ex_field = np.zeros( (int(numRods), int(numPoints), int(numPoints)),dtype=complex)
     Ey_field = np.zeros( (int(numRods), int(numPoints), int(numPoints)),dtype=complex)
     Ez_field = np.zeros( (int(numRods), int(numPoints), int(numPoints)),dtype=complex)
     
     for which_dipole in range(0, int(numRods)):
-=======
-    Ex_field = np.zeros( (int(numParts), int(numPoints), int(numPoints)),dtype=complex)
-    Ey_field = np.zeros( (int(numParts), int(numPoints), int(numPoints)),dtype=complex)
-    Ez_field = np.zeros( (int(numParts), int(numPoints), int(numPoints)),dtype=complex)
-    
-    for which_dipole in range(0, int(numParts)):
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
         for which_y in range(0, int(numPoints)):
             for which_z in range(0, int(numPoints)):
                 xval = x
@@ -355,11 +235,7 @@ def seeFields(mode):
                 zval = z[which_z]
                 k = w/hbar_eVs/c
                 point = np.array([xval, yval, zval])
-<<<<<<< HEAD
                 r = point - sphere_origins
-=======
-                r = point - part_origins
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
                 nhat = r/np.linalg.norm(r)
                 nhat_dot_p = np.sum(nhat*p,axis=1)[:,np.newaxis]
                 magr = np.linalg.norm(r,axis=1)[:,np.newaxis]
@@ -382,24 +258,15 @@ def seeFields(mode):
         extent=[ymin,ymax,zmin,zmax]
         )
 
-<<<<<<< HEAD
     plt.scatter(sphere_origins[:,1], sphere_origins[:,2],c='black',s=30)
     plt.quiver(sphere_origins[:,1], sphere_origins[:,2], p[:,1], p[:,2], pivot='mid', 
-=======
-    plt.scatter(part_origins[:,1], part_origins[:,2],c='black',s=30)
-    plt.quiver(part_origins[:,1], part_origins[:,2], p[:,1], p[:,2], pivot='mid', 
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
         width=0.1, #shaft width in arrow units 
         scale=2., 
         headlength=4,
         headwidth=5.8,
         minshaft=4.1, 
         minlength=.1)
-<<<<<<< HEAD
     # plt.quiver(sphere_origins[whichsphere,1], sphere_origins[whichsphere,2], p[whichsphere,1], p[whichsphere,2], color='green',pivot='mid', width=0.1,scale=2.,headlength=4,headwidth=5.8,minshaft=4.1, minlength=.1)
-=======
-    # plt.quiver(part_origins[whichsphere,1], part_origins[whichsphere,2], p[whichsphere,1], p[whichsphere,2], color='green',pivot='mid', width=0.1,scale=2.,headlength=4,headwidth=5.8,minshaft=4.1, minlength=.1)
->>>>>>> 216deca7597a17287856b5cc7947f177b94814de
     plt.show()
 
 #seeFields(mode=0)
