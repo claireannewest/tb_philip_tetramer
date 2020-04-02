@@ -7,6 +7,8 @@ import math
 import yaml
 from scipy import optimize
 from scipy.special import kn
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
 
 open_param_file = open('parameters.yaml')
 param = yaml.load(open_param_file)
@@ -16,17 +18,21 @@ eps_b = 1.0
 hbar_eVs = param['constants']['hbar_eVs']
 e = param['constants']['e']
 hbar_cgs = param['constants']['hbar_cgs']
-
 prec = param['precision']
+
 n=1
 um_to_per_s = 2*np.pi*c/(n)*1e4 # omega = this variable / lambda (in um)
-#inputdata = np.loadtxt('inputs_spheres.txt', skiprows=1)
 inputs = np.loadtxt(str('../')+param['inputs'],skiprows=1)
+
+which='Ds'
+elong_or_chub = 'elong'
 
 def loadData(which):
     if which == 'Dl':
-        #data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_long',skiprows=1)
-        data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_long',skiprows=1)
+        if elong_or_chub == 'chub':
+            data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_long',skiprows=1)
+        if elong_or_chub == 'elong':
+            data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_long',skiprows=1)
         w_long = data_long[:,1] #eV
         effic_long = data_long[:,2]
         allData_long = np.column_stack([w_long, effic_long])
@@ -39,8 +45,10 @@ def loadData(which):
         effic_sim = np.asarray(allData_sortlong[:,1])
     
     if which == 'Ds':
-        #data_short = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_shortoff',skiprows=1)
-        data_short = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_shortoff',skiprows=1)
+        if elong_or_chub == 'chub':
+            data_short = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_shortoff',skiprows=1)
+        if elong_or_chub == 'elong':
+            data_short = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_shortoff',skiprows=1)
         w_short = data_short[:,1] # eV
         effic_short = data_short[:,2]
         allData_short = np.column_stack([w_short, effic_short])
@@ -54,9 +62,6 @@ def loadData(which):
 
     return [w, effic_sim/max(effic_sim)]
 
-
-# gRscale = .01
-# amp_scale = 45.
 def gammaEELS(
     w_all, # the range of wavelengths the Gam EELS is taken over, i.e. we need a val of GamEEL for many different wavelenths [1/s]
     w0,
@@ -75,8 +80,6 @@ def gammaEELS(
    # print constants
     Gam_EELS = constants*np.imag(alpha)
     return amp*Gam_EELS #units of 1/eV
-
-
 
 gaml_scale = .05
 ampl_scale = 25
@@ -100,57 +103,43 @@ def plot_n_fit_long():
     print('m_l = ', '%.3e' % ((2.0*e**2)/(3.0*(params[1]*gaml_scale)*hbar_eVs*c**3)))
 
     plt.subplot(1,1,1)
+    if elong_or_chub == 'chub':
+        data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_long',skiprows=1)
+        allData = np.column_stack([data_long[:,1], data_long[:,2]]); allData_sort = allData[allData[:,0].argsort()[::-1]]
+        title='Fitting Long Axis Dipole (172 nm x 92 nm rod)'
+    if elong_or_chub == 'elong':
+        data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_long',skiprows=1)
+        allData = np.column_stack([data_long[:,1], data_long[:,2]]); allData_sort = allData[allData[:,0].argsort()[::-1]]
+        title='Fitting Long Axis Dipole (200 nm x 60 nm rod)'
+
     plt.plot(w_rawdata,  fit_gammaEELSlong(w_rawdata,*params),'k',label='Fit',linewidth=3)
-    plt.plot(w_rawdata, eel_rawdata, color='dodgerblue', linestyle=':',label='Raw data',linewidth=3)
-    plt.legend()
+    plt.plot(allData_sort[:,0], allData_sort[:,1]/max(allData_sort[:,1]),color='dodgerblue', linestyle=':',label='Raw data',linewidth=3)
+
+    plt.title(title, fontsize=16)
+    plt.xlim([0.5, 2.75])
+    plt.xlabel('Energy [eV]', fontsize=16)
+    plt.ylabel('Noramlized EEL [eV$^{-1}$]',fontsize=16)
+    plt.yticks(fontsize=14)
+    plt.xticks([0.5, 1.0, 1.5, 2.0, 2.5], fontsize=14)
+    plt.legend(fontsize=14, frameon=False, loc='upper left')
+    plt.subplots_adjust(bottom=0.2)
     plt.show()
 
-#plot_n_fit_long()
-
-################################################
-################################################
-
-# gams_scale = .03; 
-# amps_scale = 40; 
-
-# def fit_gammaEELSshort(raw_w, w0s, gamRs, amps):
-#     ebeam_loc = np.array([0, -26*2*1E-7])
-#     gammaEEL_short = gammaEELS(w_all=raw_w,w0=w0s, gamR=gamRs*gams_scale,amp=amps*amps_scale,ebeam_loc=ebeam_loc)
-#     return gammaEEL_short
-
-# def plot_n_fit_short():
-#     #       w_s, w_q, g_s, g_q, m_s, m_q
-#     lower = [1.4, 1., 1]
-#     upper = [2.9,  10, 10.]
-
-#     guess = [1.6, 5, 5]
-
-#     w_rawdata = loadData(which='Ds')[0]
-#     eel_rawdata = loadData(which='Ds')[1]
-#     params, params_covariance = optimize.curve_fit(fit_gammaEELSshort, w_rawdata, eel_rawdata, bounds=[lower,upper],p0=guess)
-#     print params
-#     print 'w_s = ', '%.2f' % params[0]
-#     print 'gam_s = ','%.2f' %  (params[1]*gams_scale)
-#     print 'm_s = ', '%.3e' % ((2.0*e**2)/(3.0*(params[1]*gams_scale)*hbar_eVs*c**3))
-
-#     plt.subplot(1,1,1)
-#     plt.plot(w_rawdata,  fit_gammaEELSshort(w_rawdata,*params),'k',label='Fit',linewidth=3)
-#     plt.plot(w_rawdata, eel_rawdata, color='dodgerblue', linestyle=':',label='Raw data',linewidth=3)
-
-#     plt.show()
-
-# plot_n_fit_short()
+if which == 'Dl':
+    plot_n_fit_long()
 
 ########################################################################2#######################
 ################################################################################################
 
 ### normal ###
-gams_scale = .02; gaml_scale = .09; 
-amps_scale = 9; ampl_scale = 2; 
+if elong_or_chub == 'chub':
+    gams_scale = .02; gaml_scale = .09; 
+    amps_scale = 9; ampl_scale = 2; 
 
 ### elongate ###
-# gams_scale = .04; gaml_scale = .08; 
-# amps_scale = 10; ampl_scale = 1; 
+if elong_or_chub == 'elong':
+    gams_scale = .04; gaml_scale = .08; 
+    amps_scale = 10; ampl_scale = 1; 
 
 def fit_gammaEELSshortnlong(raw_w, w0s, gamRs, amps,w0l, gamRl, ampl):
     ebeam_loc = np.array([0, -26*2*1E-7])
@@ -162,7 +151,6 @@ def plot_n_fit_shortnquad():
     #       w_s, w_q, g_s, g_q, m_s, m_q
     lower = [1.9,  1.,  1,  1.4,  1., 1]
     upper = [2.9,  10., 10., 2.9,  10, 10.]
-
     guess = [2.45, 1.5, 5, 1.6, 5, 5]
 
     w_rawdata = loadData(which='Ds')[0]
@@ -170,8 +158,27 @@ def plot_n_fit_shortnquad():
     params, params_covariance = optimize.curve_fit(fit_gammaEELSshortnlong, w_rawdata, eel_rawdata, bounds=[lower,upper],p0=guess)
 
     plt.subplot(1,1,1)
+    if elong_or_chub == 'chub':
+        data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_shortoff',skiprows=1)
+        allData = np.column_stack([data_long[:,1], data_long[:,2]]); allData_sort = allData[allData[:,0].argsort()[::-1]]
+        title='Fitting Short Axis Dipole (172 nm x 92 nm rod)'
+    if elong_or_chub == 'elong':
+        data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_shortoff',skiprows=1)
+        allData = np.column_stack([data_long[:,1], data_long[:,2]]); allData_sort = allData[allData[:,0].argsort()[::-1]]
+        title='Fitting Short Axis Dipole (200 nm x 60 nm rod)'
+
+
     plt.plot(w_rawdata,  fit_gammaEELSshortnlong(w_rawdata,*params),'k',label='Fit',linewidth=3)
-    plt.plot(w_rawdata, eel_rawdata, color='dodgerblue', linestyle=':',label='Raw data',linewidth=3)
+    plt.plot(w_rawdata, eel_rawdata, color='lime', linestyle=':',label='Raw data',linewidth=3)
+   
+    plt.title(title, fontsize=16)
+    plt.xlim([1.25, 2.5])
+    plt.xlabel('Energy [eV]', fontsize=16)
+    plt.ylabel('Noramlized EEL [eV$^{-1}$]',fontsize=16)
+    plt.yticks(fontsize=14)
+    plt.xticks([1.5, 2.0, 2.5], fontsize=14)
+    plt.legend(fontsize=14, frameon=False, loc='upper left')
+    plt.subplots_adjust(bottom=0.2)
     plt.show()
 
     print(params)
@@ -181,5 +188,5 @@ def plot_n_fit_shortnquad():
     print('w_l = ', '%.2f' % params[3])
     print('m_l = ', '%.3e' % ((2.0*e**2)/(3.0*(params[4]*gams_scale)*hbar_eVs*c**3)))
 
-
-plot_n_fit_shortnquad()
+if which == 'Ds':
+    plot_n_fit_shortnquad()

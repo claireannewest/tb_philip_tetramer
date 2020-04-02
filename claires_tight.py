@@ -27,16 +27,16 @@ numRods = len(inputs)
 numIndModes = (inputs.shape[1]-4)/2
 
 ### normal 
-w0_L = 1.86
-w0_S = 2.45
-m_L = .8126E-34
-m_S = 1.370E-34
+# w0_L = 1.86
+# w0_S = 2.45
+# m_L = .8126E-34
+# m_S = 1.370E-34
 
 ### elongate
-# w0_L = 1.62
-# w0_S = 2.45
-# m_L = .9824E-34
-# m_S = 1.798E-34
+w0_L = 1.62
+w0_S = 2.45
+m_L = .9824E-34
+m_S = 1.773E-34
 
 gamNR_L = 0.07
 gamNR_S = 0.07
