@@ -25,8 +25,8 @@ inputs = np.loadtxt(str('../')+param['inputs'],skiprows=1)
 
 def loadData(which):
     if which == 'Dl':
-        data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_long',skiprows=1)
-        #data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_long',skiprows=1)
+        #data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_long',skiprows=1)
+        data_long = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_long',skiprows=1)
         w_long = data_long[:,1] #eV
         effic_long = data_long[:,2]
         allData_long = np.column_stack([w_long, effic_long])
@@ -39,8 +39,8 @@ def loadData(which):
         effic_sim = np.asarray(allData_sortlong[:,1])
     
     if which == 'Ds':
-        data_short = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_shortoff',skiprows=1)
-        #data_short = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_shortoff',skiprows=1)
+        #data_short = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/Spectrum_monomer_shortoff',skiprows=1)
+        data_short = np.loadtxt('/Users/clairewest/werk/research/philips_square/simulations/eels/elongate/Spectrum_elongmono_shortoff',skiprows=1)
         w_short = data_short[:,1] # eV
         effic_short = data_short[:,2]
         allData_short = np.column_stack([w_short, effic_short])
@@ -105,7 +105,7 @@ def plot_n_fit_long():
     plt.legend()
     plt.show()
 
-plot_n_fit_long()
+#plot_n_fit_long()
 
 ################################################
 ################################################
@@ -182,4 +182,4 @@ def plot_n_fit_shortnquad():
     print('m_l = ', '%.3e' % ((2.0*e**2)/(3.0*(params[4]*gams_scale)*hbar_eVs*c**3)))
 
 
-#plot_n_fit_shortnquad()
+plot_n_fit_shortnquad()
